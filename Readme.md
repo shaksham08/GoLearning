@@ -303,3 +303,157 @@ fmt.Println(a <= b)
 - we also have assignment operator eg `a += b`
 
 - we also have bit wise operator which performs operation at bit level i.e `& , OR - | , XOR - ^ , >> , <<`
+
+### Simple CLI based project (Todo's)
+
+- we can add , view , delete , mark complete task
+- All these will be done by CLI itself
+- We can add simple and deadline task
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var task_name string
+	fmt.Println("Enter the task")
+
+	fmt.Scanf("%s", &task_name)
+
+	fmt.Println("The task you entered is : ", task_name)
+
+}
+```
+
+- lets ask user if its a simple task or deadline task and then we will aks for the task itself
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var task_type, task_name string
+
+	const SIMPLE_TASK string = "simple_task"
+	const DEADLINE_TASK string = "deadline_task"
+
+	fmt.Println("Enter the task type ")
+
+	fmt.Scanf("%q", &task_type)
+
+	if task_type == SIMPLE_TASK {
+		fmt.Println("Enter the simple task")
+		fmt.Scanf("%q", &task_name)
+
+		fmt.Println("Your simple task is :", task_name)
+	} else if task_type == DEADLINE_TASK {
+		fmt.Println("Enter the de adline task")
+		fmt.Scanf("%q", &task_name)
+
+		fmt.Println("Your deadline task is :", task_name)
+	} else {
+		fmt.Println("Invalid i/p")
+	}
+
+}
+```
+
+- we can use switch cases for this
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var task_type, task_name string
+
+	const SIMPLE_TASK string = "simple_task"
+	const DEADLINE_TASK string = "deadline_task"
+
+	fmt.Println("Enter the task type ")
+
+	fmt.Scanf("%s", &task_type)
+
+	switch task_type {
+	case SIMPLE_TASK:
+		fmt.Println("Enter the simple task")
+		fmt.Scanf("%s", &task_name)
+
+		fmt.Println("Your simple task is :", task_name)
+
+	case DEADLINE_TASK:
+		fmt.Println("Enter the deadline task")
+		fmt.Scanf("%s", &task_name)
+
+		fmt.Println("Your deadline task is :", task_name)
+	default:
+		fmt.Println("Invalid i/p")
+	}
+
+}
+```
+
+- Here we don't need to add break statement , also we can simplify this as well
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var task_type, task_name string
+
+	const SIMPLE_TASK string = "simple_task"
+	const DEADLINE_TASK string = "deadline_task"
+
+	fmt.Println("Enter the task type ")
+
+	fmt.Scanf("%s", &task_type)
+
+	switch task_type {
+	case SIMPLE_TASK, DEADLINE_TASK:
+		fmt.Println("Enter your", task_type)
+		fmt.Scanf("%s", &task_name)
+		fmt.Printf("Your %s is %s", task_type, task_name)
+
+	default:
+		fmt.Println("Invalid i/p")
+	}
+
+}
+```
+
+- Lets say we want to use loop here
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var task_type, task_name string
+
+	const SIMPLE_TASK string = "simple_task"
+	const DEADLINE_TASK string = "deadline_task"
+
+	for {
+		fmt.Println("Enter the task type ")
+
+		fmt.Scanf("%s", &task_type)
+
+		switch task_type {
+		case SIMPLE_TASK, DEADLINE_TASK:
+			fmt.Println("Enter your", task_type)
+			fmt.Scanf("%s", &task_name)
+			fmt.Printf("Your %s is %s\n", task_type, task_name)
+
+		default:
+			fmt.Println("Invalid i/p")
+		}
+	}
+
+}
+```
