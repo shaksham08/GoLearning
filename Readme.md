@@ -28,7 +28,7 @@ func main() {
 }
 ```
 
-Note: **Whenver you want to read about something in go just search `go doc fmt Println`**
+Note: **Whenever you want to read about something in go just search `go doc fmt Println`**
 
 - To run the above program just run `go run main.go`
 
@@ -438,9 +438,10 @@ func main() {
 
 	const SIMPLE_TASK string = "simple_task"
 	const DEADLINE_TASK string = "deadline_task"
+	const EXIT string = "exit"
 
 	for {
-		fmt.Println("Enter the task type ")
+		fmt.Printf("Enter the task type(%s , %s)  or %s to quit\n", SIMPLE_TASK, DEADLINE_TASK, EXIT)
 
 		fmt.Scanf("%s", &task_type)
 
@@ -450,10 +451,489 @@ func main() {
 			fmt.Scanf("%s", &task_name)
 			fmt.Printf("Your %s is %s\n", task_type, task_name)
 
+		case EXIT:
+			return
+
 		default:
 			fmt.Println("Invalid i/p")
 		}
 	}
 
+}
+```
+
+### Arrays in Go
+
+- Basic initialization of arrays
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var tasks [10]string = [10]string{"hello", "world"}
+	fmt.Println(tasks)
+}
+```
+
+- we can use shorthand operator as well
+
+```go
+tasks := [10]string{"hello", "world"}
+```
+
+- here this ellipsis tells the length which we initialize
+
+```go
+tasks := [...]string{"hello", "world"}
+fmt.Println(tasks)
+fmt.Println(len(tasks))
+fmt.Println(cap(tasks))
+```
+
+```go
+tasks := [...]string{"hello", "world"}
+fmt.Println(tasks)
+fmt.Println(len(tasks))
+fmt.Println(cap(tasks))
+
+var new_tasks [10]string = [10]string{"hello", "world"}
+fmt.Println(new_tasks)
+fmt.Println(len(new_tasks))
+fmt.Println(cap(new_tasks))
+
+fmt.Println(new_tasks[1])
+```
+
+- Some usage of iteration over array
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	//var tasks [10]string = [10]string{"hello", "world"}
+	//tasks := [10]string{"hello", "world"}
+	tasks := [...]string{"hello", "world"}
+	fmt.Println(tasks)
+	fmt.Println(len(tasks))
+	fmt.Println(cap(tasks))
+
+	var new_tasks [10]string = [10]string{"hello", "world"}
+	fmt.Println(new_tasks)
+	fmt.Println(len(new_tasks))
+	fmt.Println(cap(new_tasks))
+
+	fmt.Println(new_tasks[1])
+
+	for i := 0; i < len(new_tasks); i++ {
+		new_tasks[i] = "task : " + strconv.Itoa(i)
+	}
+
+	for i := 0; i < len(new_tasks); i++ {
+		fmt.Println(new_tasks[i])
+	}
+}
+```
+
+- now coming back to our old tasks cli tool we can use array to store tasks there as well
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var task_type, task_name string
+
+	const SIMPLE_TASK string = "simple_task"
+	const DEADLINE_TASK string = "deadline_task"
+	const EXIT string = "exit"
+	const VIEW_TASKS = "view_tasks"
+
+	var tasks [10]string
+
+	idx := 0
+
+	for {
+		fmt.Printf("Enter the task type(%s , %s) , %s  or %s to quit\n", SIMPLE_TASK, DEADLINE_TASK, VIEW_TASKS, EXIT)
+
+		fmt.Scanf("%s", &task_type)
+
+		switch task_type {
+		case SIMPLE_TASK, DEADLINE_TASK:
+			fmt.Println("Enter your", task_type)
+			fmt.Scanf("%s", &task_name)
+			fmt.Printf("Your %s is %s\n", task_type, task_name)
+			tasks[idx] = task_name
+			idx++
+
+		case VIEW_TASKS:
+			for i := 0; i < len(tasks); i++ {
+				fmt.Println(tasks[i])
+			}
+
+		case EXIT:
+			return
+
+		default:
+			fmt.Println("Invalid i/p")
+		}
+	}
+
+}
+```
+
+### Slices in go
+
+- Here we can slice an array from one index to another
+- Also from the index where we slice the new array also points to the same memory reference from where it was sliced
+- so we can see here the number 3 at position index 1 and position index 0 of s array will point to same memory address
+- also the capacity will be till the last index of the array from where it was sliced
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	primes := [6]int{2, 3, 5, 7, 11, 13}
+
+	var s []int = primes[1:4]
+	fmt.Println(s)
+	fmt.Println(len(s)) //3
+	fmt.Println(cap(s)) //5
+
+	primes[1] = 22
+	fmt.Println(s) // [22 5 7]
+	fmt.Println(len(s)) //3
+	fmt.Println(cap(s)) //5
+}
+```
+
+### Append in slices
+
+- if element can be inserted in an underlying array (if there is capacity) then keep adding in the same
+- If the capacity is exceeded :
+  - creates a new array with 2x the capacity of the original slice
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// primes := [6]int{2, 3, 5, 7, 11, 13}
+
+	// var s []int = primes[1:4]
+	// fmt.Println(s)
+	// fmt.Println(len(s)) //3
+	// fmt.Println(cap(s)) //5
+
+	// primes[1] = 22
+	// fmt.Println(s)
+	// fmt.Println(len(s)) //3
+	// fmt.Println(cap(s)) //5
+
+	tasks := [5]string{"task1", "task2", "task3", "task4", "task5"}
+	var sliced_task []string = tasks[1:3]
+
+	fmt.Println(tasks)
+	fmt.Println(sliced_task)
+	fmt.Println(len(sliced_task))
+	fmt.Println(cap(sliced_task))
+
+	fmt.Println()
+
+	sliced_task = append(sliced_task, "taskNew")
+	fmt.Println(tasks)
+	fmt.Println(sliced_task)
+	fmt.Println(len(sliced_task))
+	fmt.Println(cap(sliced_task))
+
+	fmt.Println()
+
+	sliced_task = append(sliced_task, "taskNew")
+	fmt.Println(tasks)
+	fmt.Println(sliced_task)
+	fmt.Println(len(sliced_task))
+	fmt.Println(cap(sliced_task))
+
+	fmt.Println()
+
+	sliced_task = append(sliced_task, "taskNew")
+	fmt.Println(tasks)
+	fmt.Println(sliced_task)
+	fmt.Println(len(sliced_task))
+	fmt.Println(cap(sliced_task))
+
+	fmt.Println()
+
+	sliced_task = append(sliced_task, "taskNew")
+	fmt.Println(tasks)
+	fmt.Println(sliced_task)
+	fmt.Println(len(sliced_task))
+	fmt.Println(cap(sliced_task))
+
+	fmt.Println()
+
+}
+```
+
+- the output of the above code is something like
+
+```go
+[task1 task2 task3 task4 task5]
+[task2 task3]
+2
+4
+
+[task1 task2 task3 taskNew task5]
+[task2 task3 taskNew]
+3
+4
+
+[task1 task2 task3 taskNew taskNew]
+[task2 task3 taskNew taskNew]
+4
+4
+
+[task1 task2 task3 taskNew taskNew]
+[task2 task3 taskNew taskNew taskNew]
+5
+8
+
+[task1 task2 task3 taskNew taskNew]
+[task2 task3 taskNew taskNew taskNew taskNew]
+6
+8
+```
+
+- Here we can see its created a 2x Array as well and a new one
+- This append function will always return me the slice
+- There are some more things here like garbage collector , deleting something from a slice
+
+- Now we can make use of the append in our todo cli app
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var task_type, task_name string
+
+	const SIMPLE_TASK string = "simple_task"
+	const DEADLINE_TASK string = "deadline_task"
+	const EXIT string = "exit"
+	const VIEW_TASKS = "view_tasks"
+
+	var tasks []string
+
+	for {
+		fmt.Printf("Enter the task type(%s , %s) , %s  or %s to quit\n", SIMPLE_TASK, DEADLINE_TASK, VIEW_TASKS, EXIT)
+
+		fmt.Scanf("%s", &task_type)
+
+		switch task_type {
+		case SIMPLE_TASK, DEADLINE_TASK:
+			fmt.Println("Enter your", task_type)
+			fmt.Scanf("%s", &task_name)
+			fmt.Printf("Your %s is %s\n", task_type, task_name)
+			tasks = append(tasks, task_name)
+
+		case VIEW_TASKS:
+			for i := 0; i < len(tasks); i++ {
+				fmt.Println(tasks[i])
+			}
+
+		case EXIT:
+			return
+
+		default:
+			fmt.Println("Invalid i/p")
+		}
+	}
+
+}
+```
+
+- Now we don't need to manage the length of the tasks array and go will manage that internally
+
+- there is a clearer way too loop on something like this
+
+```go
+for i := 0; i < len(tasks); i++ {
+	fmt.Println(tasks[i])
+}
+```
+
+```go
+for index, element := range tasks {
+	fmt.Println(index, element)
+}
+```
+
+### Maps in go
+
+- This is basically key value pair
+- Some operation are very efficient
+
+- We will get the below error
+
+```go
+var complete_status map[int]bool
+fmt.Println(complete_status)
+complete_status[1] = true
+fmt.Println(complete_status
+```
+
+- This will basically create a nil map
+
+map[]
+panic: assignment to entry in nil map
+
+goroutine 1 [running]:
+main.main()
+/Users/shaksham/Documents/Personal/Learning/go/w1/main.go:17 +0x94
+exit status 2
+
+- to solve this and create an empty map we can make use of `make`
+
+```go
+var complete_status map[int]bool = make(map[int]bool)
+fmt.Println(complete_status)
+complete_status[1] = true
+fmt.Println(complete_status
+```
+
+- Now the output will be
+
+```
+map[]
+map[1:true]
+```
+
+- With maps we can have only unique keys
+
+- We can iterate maps using same range
+
+```go
+for key, value := range complete_status {
+		fmt.Println(key, value)
+}
+```
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var task_type, task_name string
+
+	const SIMPLE_TASK string = "simple_task"
+	const DEADLINE_TASK string = "deadline_task"
+	const EXIT string = "exit"
+	const VIEW_TASKS = "view_tasks"
+	const COMPLETE_TASK = "complete"
+	const VIEW_COMPLETED_TASK = "VIEW_COMPLETE"
+
+	var tasks []string
+
+	var complete_status map[int]bool = make(map[int]bool)
+	idx := 0
+
+	for {
+		fmt.Printf("Enter the task type(%s , %s) , %s  or %s to quit\n", SIMPLE_TASK, DEADLINE_TASK, VIEW_TASKS, EXIT)
+
+		fmt.Scanf("%s", &task_type)
+
+		switch task_type {
+		case SIMPLE_TASK, DEADLINE_TASK:
+			fmt.Println("Enter your", task_type)
+			fmt.Scanf("%s", &task_name)
+			fmt.Printf("Your %s is %s\n", task_type, task_name)
+			tasks = append(tasks, task_name)
+			complete_status[idx] = false
+			idx++
+
+		case VIEW_TASKS:
+			for index, element := range tasks {
+				fmt.Println(index, element)
+			}
+
+		case VIEW_COMPLETED_TASK:
+			for key, value := range complete_status {
+				fmt.Println(key, value)
+			}
+
+		case COMPLETE_TASK:
+			var task_id int
+			fmt.Scanf("%d", &task_id)
+			complete_status[task_id] = true
+
+		case EXIT:
+			return
+
+		default:
+			fmt.Println("Invalid i/p")
+		}
+	}
+
+}
+```
+
+### Functions in go
+
+```go
+package main
+
+import "fmt"
+
+func add(x int, y int) int {
+	return x + y
+}
+
+func main() {
+	fmt.Println(add(42, 13))
+}
+```
+
+- Return and other important things in functions
+
+```go
+
+package main
+
+import "fmt"
+
+func main() {
+	var line string
+
+	line = join(",", "Sammy", "Jessica", "Drew", "Jamie")
+	fmt.Println(line)
+
+	line = join(",", "Sammy", "Jessica")
+	fmt.Println(line)
+
+	line = join(",", "Sammy")
+	fmt.Println(line)
+}
+
+func join(values ...string, del string) string {
+	var line string
+	for i, v := range values {
+		line = line + v
+		if i != len(values)-1 {
+			line = line + del
+		}
+	}
+	return line
 }
 ```
