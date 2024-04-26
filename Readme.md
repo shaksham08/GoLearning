@@ -937,3 +937,44 @@ func join(values ...string, del string) string {
 	return line
 }
 ```
+
+## Week 2
+
+- Modules and Packages
+- These are dependency management system in go
+- Module is collection of packages
+
+### Packages
+
+- package are go ways of organizing code
+- Packages can be imported from go registry
+- packages should be focused and perform a single task
+  - handling HTTP calls
+  - drawing graphics etc.
+
+### Modules
+
+- Modules are collection of packages
+- Created by having `go.mod` file at the root directory of your project
+  - Can be managed by go cli
+- Contains information about the project
+  - Dependency , go version , package info
+- All go projects have `go.mod` file
+
+**Note: This is the [basic structure](https://github.com/golang-standards/project-layout) of a go project**
+
+**Note: If you want to practice what we have learned you can go and find the Personal Finance Project here : https://github.com/shaksham08/go-accelerate.git**
+
+**Note: We build our own command line application. But there are many frameworks/libraries that we can use to not build everything from scratch**
+
+- One such example is Cobra -> **https://github.com/spf13/cobra**
+- CLI as well -> **https://github.com/urfave/cli**
+
+**Note: Also take sometime to go over the codebase and understand how it works**
+
+- May be try reading this : **https://github.com/urfave/cli/blob/main/command.go**
+
+### Go routines
+
+- A very nice article on go routines : https://vitalcs.substack.com/p/goroutines-under-the-hood
+- Read more about coroutines :- https://en.wikipedia.org/wiki/Coroutine
