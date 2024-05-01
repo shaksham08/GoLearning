@@ -961,7 +961,114 @@ func join(values ...string, del string) string {
   - Dependency , go version , package info
 - All go projects have `go.mod` file
 
-**Note: This is the [basic structure](https://github.com/golang-standards/project-layout) of a go project**
+- To initialize a module we use `go mod init hosting/username/ModuleName` , eg `go mod init github.com/shaksham08/temp_mod`
+- This will create a go mod file as well
+
+```go
+module github.com/shaksham08/temo_go_mod
+
+go 1.22.0
+```
+
+- Now we try to add a new package from go `https://pkg.go.dev/github.com/sirupsen/logrus`
+
+```go
+package main
+
+import (
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	log.WithFields(log.Fields{
+		"animal": "walrus",
+		"number": 1,
+		"size":   10,
+	}).Info("A walrus appears")
+}
+```
+
+- Now to install the package locally we need to run the command `go get github.com/sirupsen/logrus`
+
+- Now our go mod file is
+
+```go
+module github.com/shaksham08/temo_go_mod
+
+go 1.22.0
+
+require github.com/sirupsen/logrus v1.9.3
+
+require golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+```
+
+- We can run `go mod tidy` to always create latest version of mod file
+
+- Now coming to **packages** , here is the folder structure for the same
+
+```
+go/
+┣ constants/
+┃ ┗ constants.go
+┣ pkg/
+┃ ┗ api/
+┃   ┗ api.go
+┣ go.mod
+┣ go.sum
+┗ main.go
+```
+
+- Coming to `constants.go` file
+
+```go
+package constants
+
+var (
+	LOG_LEVEL = "info"
+)
+```
+
+- Now coming to `api.go`
+
+```go
+package api
+
+import (
+	"fmt"
+
+	constants "github.com/shaksham08/temo_go_mod/constants"
+)
+
+func CallApi() {
+	fmt.Println("Calling API.....")
+	fmt.Println("LOG LEVEL is " + constants.LOG_LEVEL)
+}
+```
+
+- Now `main.go`
+
+```go
+package main
+
+import (
+	"github.com/shaksham08/temo_go_mod/pkg/api"
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	log.WithFields(log.Fields{
+		"animal": "walrus",
+		"number": 1,
+		"size":   10,
+	}).Info("A walrus appears")
+
+	api.CallApi()
+}
+```
+
+- This is how modules , packages , import export works
+
+**Note: This is the [basic style guide for go](https://github.com/golang-standards/project-layout) of a go project**
 
 **Note: If you want to practice what we have learned you can go and find the Personal Finance Project here : https://github.com/shaksham08/go-accelerate.git**
 
@@ -976,5 +1083,6 @@ func join(values ...string, del string) string {
 
 ### Go routines
 
-- A very nice article on go routines : https://vitalcs.substack.com/p/goroutines-under-the-hood
-- Read more about coroutines :- https://en.wikipedia.org/wiki/Coroutine
+- A very nice article on go routines : **https://vitalcs.substack.com/p/goroutines-under-the-hood**
+- Read more about coroutines :- **https://en.wikipedia.org/wiki/Coroutine**
+- Read basics on what go routines is : **https://gobyexample.com/goroutines**
