@@ -1312,3 +1312,363 @@ func main() {
     fmt.Println("All goroutines finished")
 }
 ```
+
+### Channels
+
+- Channels in Go are a powerful construct for communicating and synchronizing between goroutines. They provide a way for goroutines to send and receive values to and from each other, allowing for safe communication and coordination.
+
+1. Typed Communication: Channels can be typed, meaning they can only transmit values of a specific data type. For example, you can have a channel of type int, string, or even a custom struct.
+
+2. Synchronization: Channels are inherently synchronized. When a value is sent into a channel, the sending goroutine blocks until another goroutine receives the value from the channel. This ensures safe communication between goroutines.
+
+3. Buffered Channels: Channels can be buffered, meaning they can hold a limited number of values without a corresponding receiver. This allows goroutines to continue sending values to the channel without blocking until the buffer is full.
+
+4. Unidirectional Channels: Channels can be either bidirectional (default) or unidirectional, meaning they can only be used for sending or receiving values.
+
+```go
+package main
+
+import (
+    "fmt"
+)
+
+func sender(ch chan<- int) {
+    for i := 0; i < 5; i++ {
+        ch <- i // Send value into the channel
+    }
+    close(ch) // Close the channel when done sending
+}
+
+func receiver(ch <-chan int) {
+    for value := range ch {
+        fmt.Println("Received:", value) // Receive value from the channel
+    }
+}
+
+func main() {
+
+    ch := make(chan int) // Create a new channel
+	// var ch chan int -> we can also use this keyword to create a channel
+
+    go sender(ch)   // Start sender goroutine
+    go receiver(ch) // Start receiver goroutine
+
+    // Wait for both goroutines to finish
+    var input string
+    fmt.Scanln(&input)
+}
+```
+
+- Basically we have two go routines G1 and G2 then how do we communicate
+- GR1 -> ch(int) <- GR2
+
+- By default communication is bidirectional only
+- Lets take another easy example as well
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func produce(wg *sync.WaitGroup, ch chan int) {
+	i := 100
+	ch <- i
+	wg.Done()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	ch := make(chan int)
+
+	wg.Add(1)
+	go produce(&wg, ch)
+
+	wg.Wait()
+	fmt.Println("All goroutines finished")
+}
+```
+
+- When we pass channel , this line ch <- i will be blocked untile this channel is consumed by other go routine.
+- So go routine knows that this is not being consumed so it goes into deadlock situation and throws error
+- So whenever we are producing we need to consume
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func produce(wg *sync.WaitGroup, ch chan int) {
+	i := 100
+	ch <- i
+	wg.Done()
+}
+
+func consume(wg *sync.WaitGroup, ch chan int) {
+	i := <-ch
+	fmt.Println(i)
+	wg.Done()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	ch := make(chan int)
+
+	wg.Add(2)
+	go produce(&wg, ch)
+
+	go consume(&wg, ch)
+
+	wg.Wait()
+	fmt.Println("All goroutines finished")
+}
+```
+
+- This is how simple un buffered channel is created
+
+- Lets see what are buffered channels
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func produce(wg *sync.WaitGroup, ch chan int) {
+	// fmt.Println("Producing...")
+	i := 100
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	fmt.Println(len(ch))
+	// fmt.Println("Produced", i)
+	wg.Done()
+}
+
+// func consume(wg *sync.WaitGroup, ch chan int) {
+// 	fmt.Println("Waiting for data...")
+// 	i := <-ch
+// 	fmt.Println("Consumed ", i)
+
+// 	wg.Done()
+// }
+
+func main() {
+	var wg sync.WaitGroup
+	ch := make(chan int, 5)
+
+	wg.Add(1)
+	go produce(&wg, ch)
+
+	// go consume(&wg, ch)
+
+	wg.Wait()
+	fmt.Println("All goroutines finished")
+}
+```
+
+- The above programs runs very fine , also if we try to pass one more data to channel it will give error now because we only have 5 buffers
+
+- Similary for consumer we can see it will not be deadlock situation
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func produce(wg *sync.WaitGroup, ch chan int) {
+	// fmt.Println("Producing...")
+	i := 100
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	fmt.Println(len(ch))
+	// fmt.Println("Produced", i)
+	wg.Done()
+}
+
+func consume(wg *sync.WaitGroup, ch chan int) {
+	fmt.Println("Waiting for data...")
+	i := <-ch
+	fmt.Println("Consumed ", i)
+
+	wg.Done()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	ch := make(chan int, 5)
+
+	wg.Add(2)
+	go produce(&wg, ch)
+
+	go consume(&wg, ch)
+
+	wg.Wait()
+	fmt.Println("All goroutines finished")
+}
+```
+
+- Now lets add one more data to channel
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func produce(wg *sync.WaitGroup, ch chan int) {
+	// fmt.Println("Producing...")
+	i := 100
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	fmt.Println(len(ch))
+	ch <- i // here it will block and see for consumer
+	// ch <- i // this will create panic
+	// fmt.Println("Produced", i)
+	wg.Done()
+}
+
+func consume(wg *sync.WaitGroup, ch chan int) {
+	fmt.Println("Waiting for data...")
+	i := <-ch
+	fmt.Println("Consumed ", i)
+
+	wg.Done()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	ch := make(chan int, 5)
+
+	wg.Add(2)
+	go produce(&wg, ch)
+
+	go consume(&wg, ch)
+
+	wg.Wait()
+	fmt.Println("All goroutines finished")
+}
+
+```
+
+- This would also not give error because the extra data that we passed got consumed by the consumer
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func produce(wg *sync.WaitGroup, ch chan int) {
+	// fmt.Println("Producing...")
+	i := 100
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+
+	close(ch)
+	wg.Done()
+}
+
+func consume(wg *sync.WaitGroup, ch chan int) {
+	fmt.Println("Waiting for data...")
+	for value := range ch {
+		fmt.Println("Received:", value) // Receive value from the channel
+	}
+
+	wg.Done()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	ch := make(chan int, 5)
+
+	wg.Add(2)
+	go produce(&wg, ch)
+
+	go consume(&wg, ch)
+
+	wg.Wait()
+	fmt.Println("All goroutines finished")
+}
+```
+
+- Checkout this code as well
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func produce(wg *sync.WaitGroup, ch chan int) {
+	// fmt.Println("Producing...")
+	i := 100
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	ch <- i
+	close(ch)
+	fmt.Println(len(ch))
+	wg.Done()
+}
+
+func consume(wg *sync.WaitGroup, ch chan int) {
+	fmt.Println("Waiting for data...")
+	for i := 0; i < 7; i++ {
+		i, ok := <-ch
+		fmt.Println("Received:", i, "ok ", ok)
+	}
+	i, ok := <-ch
+	fmt.Println("Received:", i, "ok ", ok)
+
+	wg.Done()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	ch := make(chan int, 5)
+
+	wg.Add(2)
+	go produce(&wg, ch)
+
+	go consume(&wg, ch)
+
+	wg.Wait()
+	fmt.Println("All goroutines finished")
+}
+```
+
+- Here false value means that the channel is closed now
+
+**Note: Some pre reads [Free code camp](https://www.freecodecamp.org/news/concurrent-programming-in-go/)**
+**Note: check this out as well : https://github.com/shaksham08/go-accelerate/blob/main/goroutines.go**
