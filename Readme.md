@@ -1086,3 +1086,229 @@ func main() {
 - A very nice article on go routines : **https://vitalcs.substack.com/p/goroutines-under-the-hood**
 - Read more about coroutines :- **https://en.wikipedia.org/wiki/Coroutine**
 - Read basics on what go routines is : **https://gobyexample.com/goroutines**
+
+- We will see hwo to create a go routine in go , lets consider this basic program , here it runs sequentially in main thread
+
+```go
+package main
+
+import "fmt"
+
+func addSum(a, b int) int {
+	return a + b
+}
+
+func main() {
+	fmt.Println("The sum is ", addSum(1, 2))
+}
+```
+
+- Now how do we run this in a go routine
+
+```go
+package main
+
+import "fmt"
+
+func addSum(a, b int) {
+	fmt.Println("The sum is ", a+b)
+}
+
+func main() {
+	go addSum(1, 2)
+}
+```
+
+- now this function will run in a diff thread and not in main thread
+- Here one thing to notice is on running this program we don't see any output
+- We're using goroutines with go addSum(1, 2) to execute the addSum function concurrently. However, when a Go program exits, it doesn't wait for other goroutines to finish. Since our main function completes execution immediately after spawning the goroutine, the program ends before the goroutine has a chance to execute fmt.Println.
+- To ensure that we can see the output in the console, we can use synchronization mechanisms like **channels** or wait groups to wait for the goroutine to finish before the program exits
+- We will read more about channels later
+
+- We can also use `time.wait` for this, please note this is not correct way we are just using this temporary
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func addSum(a, b int) {
+	fmt.Println("The sum is ", a+b)
+}
+
+func main() {
+	go addSum(1, 2)
+	time.Sleep(1 * time.Second)
+}
+```
+
+- Now lets see this code
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func addSum(a, b int) {
+	fmt.Println("The sum is ", a+b)
+}
+
+func main() {
+	for i := 0; i < 10; i++ {
+		go addSum(1, i)
+	}
+	time.Sleep(5 * time.Second)
+}
+```
+
+- Here we are telling our main thread to wait for 5 seconds until all go routines is finished. Note that we are assuming that in 5s this all go routines will finish
+
+- There is one thing to note here is in the output
+
+```
+The sum is  4
+The sum is  10
+The sum is  8
+The sum is  9
+The sum is  5
+The sum is  6
+The sum is  2
+The sum is  1
+The sum is  3
+The sum is  7
+```
+
+- We can see the order is different , this is because we cannot guarantee which go routines will finish in which order
+- The scheduler of the Go runtime decides when each goroutine runs, and it can vary based on factors like CPU availability and other concurrent operations
+
+- Here's why the output order seems random:
+
+1. Concurrency: When we launch multiple goroutines, they can execute concurrently, meaning they may overlap in execution time. The order in which they're executed is determined by the scheduler, which may not follow the sequential order of the loop.
+
+2. Goroutine Scheduling: The Go runtime's scheduler is free to schedule goroutines in any order it sees fit, based on factors like available CPU resources and other runtime conditions. This means that even though you start them in order in your loop, they might not execute in the same order.
+
+- There is one more way of creating a go routine i.e using anonymous functions
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	go func() {
+		fmt.Println("hello world")
+	}()
+	time.Sleep(5 * time.Second)
+}
+```
+
+### WaitGroups
+
+- waitGroups is primitive that is used to synchronize go routines , allows go routines/ execution to wait for one another
+
+- now we saw `time.Sleep(5 * time.Second)` is not the best way to wait, we have better way to wait around this when main thread ends
+
+- lets consider this example
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func printAddress() {
+	fmt.Println("This is address")
+}
+
+func printName() {
+	go printAddress()
+	fmt.Println("This is name")
+}
+
+func main() {
+	go printName()
+	time.Sleep(5 * time.Second)
+}
+```
+
+- the output of this is
+
+```
+This is name
+This is address
+```
+
+- The order in which go routines is not deterministic , the above output can swap as well
+
+- we can make use of waitGroups
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func printAddress() {
+	fmt.Println("This is address")
+}
+
+func printName(wg *sync.WaitGroup) {
+	go printAddress()
+	fmt.Println("This is name")
+	wg.Done()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	wg.Add(1) // setting the counter to 1 and also this expects one go routine
+	go printName(&wg)
+	wg.Wait()
+
+}
+```
+
+- Another example where we are waiting for 2 go routines
+
+```go
+package main
+
+import (
+    "fmt"
+    "sync"
+)
+
+func main() {
+    var wg sync.WaitGroup
+
+    wg.Add(2) // Expecting two goroutines
+
+    // Launching first goroutine
+    go func() {
+        fmt.Println("First goroutine")
+        wg.Done() // Signal completion explicitly
+    }()
+
+    // Launching second goroutine
+    go func() {
+        fmt.Println("Second goroutine")
+        wg.Done() // Signal completion explicitly
+    }()
+
+    // Wait for all goroutines to finish
+    wg.Wait()
+    fmt.Println("All goroutines finished")
+}
+```
