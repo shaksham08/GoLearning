@@ -1670,5 +1670,168 @@ func main() {
 
 - Here false value means that the channel is closed now
 
-**Note: Some pre reads [Free code camp](https://www.freecodecamp.org/news/concurrent-programming-in-go/)**
-**Note: check this out as well : https://github.com/shaksham08/go-accelerate/blob/main/goroutines.go**
+- **Note: Some pre reads [Free code camp](https://www.freecodecamp.org/news/concurrent-programming-in-go/)**
+- **Note: check this out as well : https://github.com/shaksham08/go-accelerate/blob/main/goroutines.go**
+
+- List of some more reads :-
+  - Goroutines: https://www.programiz.com/golang/goroutines
+  - Channels: https://www.programiz.com/golang/channel
+  - Select: https://www.programiz.com/golang/select
+  - defer: https://www.programiz.com/golang/defer-panic-recover
+  - Context:
+    - https://levelup.gitconnected.com/how-to-use-context-to-manage-your-goroutines-like-a-boss-ef1e478919e6
+    - https://pkg.go.dev/context
+
+### Interfaces
+
+- Every value has a type
+- Every function has to specify the type of its arguments , So does it means
+- Every function we ever write has to be rewritten to accommodate different types even if the logic in it is identical ?
+
+- Consider the code below
+
+```go
+package main
+
+import "fmt"
+
+type bot interface {
+	getGreeting() string
+}
+
+type englishBot struct{}
+type spanishBot struct{}
+
+func main() {
+	eb := englishBot{}
+	sb := spanishBot{}
+
+	printGreeting(eb)
+	printGreeting(sb)
+}
+
+func printGreeting(b bot) {
+	fmt.Println(b.getGreeting())
+}
+
+func (englishBot) getGreeting() string {
+	return "Hi there!"
+}
+
+func (spanishBot) getGreeting() string {
+	return "Hola!"
+}
+```
+
+- Here `printGreeting` function is used by both two types so we would have to create two different functions with different parameter type.
+
+- But using interface we can reuse the code
+
+- In Go, interfaces provide a way to specify the behavior of an object. An interface type is defined as a set of method signatures. Any type that implements all the methods of the interface is said to satisfy the interface, whether or not it explicitly declares that it implements the interface. This allows for polymorphism and decoupling in Go programs.
+
+```go
+package main
+
+import (
+    "fmt"
+)
+
+// Define an interface named Shape
+type Shape interface {
+    Area() float64
+}
+
+// Define a struct for Circle
+type Circle struct {
+    Radius float64
+}
+
+// Implement the Area method for Circle
+func (c Circle) Area() float64 {
+    return 3.14 * c.Radius * c.Radius
+}
+
+// Define a struct for Rectangle
+type Rectangle struct {
+    Length float64
+    Width  float64
+}
+
+// Implement the Area method for Rectangle
+func (r Rectangle) Area() float64 {
+    return r.Length * r.Width
+}
+
+func main() {
+    // Creating a Circle object
+    circle := Circle{Radius: 5}
+    // Creating a Rectangle object
+    rectangle := Rectangle{Length: 3, Width: 4}
+
+    // Now, both Circle and Rectangle types implement the Shape interface
+    // We can use a slice of Shape to hold both Circle and Rectangle objects
+    shapes := []Shape{circle, rectangle}
+
+    // Iterate over the shapes and print their areas
+    for _, shape := range shapes {
+        fmt.Println("Area:", shape.Area())
+    }
+}
+```
+
+- We define an interface named Shape with a single method Area().
+- We define two struct types, Circle and Rectangle, each with its own implementation of the Area() method.
+- Both Circle and Rectangle implicitly implement the Shape interface because they have a method with the signature Area() float64.
+- In the main() function, we create instances of Circle and Rectangle, and then add them to a slice of Shape.
+- We iterate over the shapes in the slice and call the Area() method on each one. Since both Circle and Rectangle implement the Shape interface, we can call Area() on both types without knowing their specific types at compile time.
+
+- In Go, interfaces are implicitly implemented. This means you don't need to explicitly declare that a type implements an interface. As long as a type has methods that match the method signatures of the interface, it's considered to implement that interface. This feature makes Go's interfaces powerful and flexible, allowing for decoupled and polymorphic code without the need for explicit inheritance or implementation declarations.
+
+- Here is a simple program to read data from http server
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	// Make an HTTP GET request to google.com
+	response, err := http.Get("http://www.google.com")
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer response.Body.Close() // Don't forget to close the response body
+	fmt.Println("HTTP Status Code:", response.StatusCode)
+
+	// Create a byte slice to store the response body
+	var body []byte
+
+	// Read data from the response body using the Read function
+	buffer := make([]byte, 1024) // Create a buffer to read into
+	for {
+		n, err := response.Body.Read(buffer)
+		if err != nil && err != io.EOF {
+			fmt.Println("Error reading response body:", err)
+			return
+		}
+		if n == 0 {
+			break
+		}
+		body = append(body, buffer[:n]...)
+	}
+
+	// Print the length of the response body
+	fmt.Printf("Length of response body: %d bytes\n", len(body))
+}
+```
+
+- We create a byte slice (body) to store the response body.
+- We use a loop to repeatedly call response.Body.Read(buffer) to read data from the response body into the buffer.
+- We append the data read from the buffer to the body byte slice.
+- We exit the loop when Read returns 0 bytes read (indicating end of the response body) or when it encounters an error other than io.EOF.
+- Finally, we print the length of the response body, which represents the number of bytes read into the byte slice.
