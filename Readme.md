@@ -1762,6 +1762,10 @@ func (r Rectangle) Area() float64 {
     return r.Length * r.Width
 }
 
+func PrintArea(s Shape) {
+    fmt.Println(s.Area())
+}
+
 func main() {
     // Creating a Circle object
     circle := Circle{Radius: 5}
@@ -1774,7 +1778,7 @@ func main() {
 
     // Iterate over the shapes and print their areas
     for _, shape := range shapes {
-        fmt.Println("Area:", shape.Area())
+        PrintArea(shape)
     }
 }
 ```
