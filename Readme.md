@@ -1839,3 +1839,68 @@ func main() {
 - We append the data read from the buffer to the body byte slice.
 - We exit the loop when Read returns 0 bytes read (indicating end of the response body) or when it encounters an error other than io.EOF.
 - Finally, we print the length of the response body, which represents the number of bytes read into the byte slice.
+
+### Some important points regarding channels in go
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/shaksham08/log-stream-processor/pkg/models"
+)
+
+func sendToChannel(ch chan int, wg *sync.WaitGroup) {
+	for i := 1; i < 11; i++ {
+		ch <- i
+	}
+	close(ch)
+	wg.Done()
+}
+
+func main() {
+	ch := make(chan int)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go sendToChannel(ch, &wg)
+	defer wg.Wait()
+	for {
+		select {
+		case i, ok := <-ch:
+			{
+				fmt.Println("recieved from ch ", i)
+			}
+			if !ok {
+				fmt.Println("Channel closed")
+				return
+			}
+		}
+	}
+}
+```
+
+- Here the output is
+
+```go
+recieved from ch  1
+recieved from ch  2
+recieved from ch  3
+recieved from ch  4
+recieved from ch  5
+recieved from ch  6
+recieved from ch  7
+recieved from ch  8
+recieved from ch  9
+recieved from ch  10
+recieved from ch  0
+Channel closed
+```
+
+- Here we can see we got all 10 values that we passed to channel but at the end we also go a 0 value that is because the channel was closed and the default value was set to 0
+
+- So, the reason we're seeing 11 values (from 1 to 10 and then 0) is because after sending values from 1 to 10, the channel is closed. When we read from a closed channel in Go, it returns the zero value for the type of that channel, which in this case is an int, hence we're seeing the additional 0 value.
+
+- Using a range loop simplifies your code, and it automatically stops when the channel is closed, avoiding the need for an explicit check on ok.
