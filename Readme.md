@@ -1904,3 +1904,34 @@ Channel closed
 - So, the reason we're seeing 11 values (from 1 to 10 and then 0) is because after sending values from 1 to 10, the channel is closed. When we read from a closed channel in Go, it returns the zero value for the type of that channel, which in this case is an int, hence we're seeing the additional 0 value.
 
 - Using a range loop simplifies your code, and it automatically stops when the channel is closed, avoiding the need for an explicit check on ok.
+
+### Some pre reads
+
+- Goroutines: https://www.programiz.com/golang/goroutines
+
+- Channels: https://www.programiz.com/golang/channel
+
+- Select: https://www.programiz.com/golang/select
+
+- defer: https://www.programiz.com/golang/defer-panic-recover
+
+- Context:
+
+  - https://levelup.gitconnected.com/how-to-use-context-to-manage-your-goroutines-like-a-boss-ef1e478919e6
+  - https://pkg.go.dev/context
+
+- Modules: https://go.dev/blog/using-go-modules
+
+- Concurrent TCP Server: https://youtu.be/f9gUFy-9uCM?si=Ae-GGGA-1RfLto6j
+
+- API Server: https://tutorialedge.net/golang/creating-restful-api-with-golang/
+
+- MySQL with Go: https://go.dev/doc/tutorial/database-access
+
+- Context : https://priyanka488.hashnode.dev/understand-context-in-go-with-examples
+
+- Building a concurrent TCP server :- https://priyanka488.hashnode.dev/preview/65e1a00d9cf86d021ffeedd6
+
+- All bootcamp material for go :- https://playbook.one2n.in/go-bootcamp
+
+- Job scheduler Repo :- https://github.com/Priyanka488/monkqueue/commit/ec9b13755ac06666ba0f545e305b38c3de8382b5
